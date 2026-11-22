@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.xianxia.mapper.StorageItemMapper">
+
+    <resultMap id="storageItemResultMap" type="com.example.xianxia.entity.StorageItem">
+        <id column="id" property="id" />
+        <result column="cultivator_id" property="cultivatorId" />
+        <result column="item_name" property="itemName" />
+        <result column="item_type" property="itemType" />
+        <result column="quality" property="quality" />
+        <result column="quantity" property="quantity" />
+        <result column="effect_value" property="effectValue" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+
+    <insert id="updateItem">
+        INSERT INTO storage_item (cultivator_id, item_name, item_type, quality, quantity, effect_value)
+        VALUES (#{cultivatorId}, #{itemName}, #{itemType}, #{quality}, #{quantity}, #{effectValue}) AS new_item
+        ON DUPLICATE KEY UPDATE
+            quantity = storage_item.quantity + new_item.quantity
+    </insert>
+
+    <update id="decreaseQuantity">
+        UPDATE storage_item
+        SET quantity = quantity - #{amount}
+        WHERE id = #{id} AND quantity &gt;= #{amount}
+    </update>
+
+    <select id="selectById" resultMap="storageItemResultMap">
+        SELECT * FROM storage_item WHERE id = #{id}
+    </select>
+
+    <select id="selectByCondition" resultMap="storageItemResultMap">
+        SELECT * FROM storage_item
+        <where>
+            cultivator_id = #{cultivatorId}
+            AND quantity > 0
+            <if test="itemType != null and itemType != ''">
+                AND itemType = #{itemType}
+            </if>
+            <if test="minQuality != null">
+                AND quality &gt;= #{minQuality}
+            </if>
+        </where>
+        ORDER BY quality DESC, id ASC
+    </select>
+</mapper>

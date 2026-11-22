@@ -1,0 +1,30 @@
+CREATE DATABASE IF NOT EXISTS xianxia_db DEFAULT CHARACTER SET utf8mb4;
+use xianxia_db;
+
+CREATE TABLE IF NOT EXISTS cultivator (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '修士ID',
+    dao_name VARCHAR(32) NOT NULL COMMENT '修士道号（唯一）',
+    realm_level INT NOT NULL DEFAULT 1 COMMENT '当前境界等级：1炼气 2筑基 3金丹 4元婴 5化神 6炼虚 7合体 8大乘 9渡劫',
+    realm_name VARCHAR(16) NOT NULL DEFAULT '炼气期' COMMENT '当前境界名称',
+    spiritual_power BIGINT NOT NULL DEFAULT 0 COMMENT '当前灵力值',
+    spirit_stones BIGINT NOT NULL DEFAULT 0 COMMENT '灵石余额',
+    version INT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号（防并发）',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_dao_name (dao_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '修士档案表';
+
+CREATE TABLE IF NOT EXISTS storage_item (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '物品记录ID',
+    cultivator_id BIGINT NOT NULL COMMENT '修士ID',
+    item_name VARCHAR(32) NOT NULL COMMENT '物品名称',
+    item_type VARCHAR(16) NOT NULL COMMENT '物品类型：DANYAO丹药 FABAO法宝 LINGCAI灵材',
+    quality INT NOT NULL DEFAULT 1 COMMENT '物品品阶：1黄阶 2玄阶 3地阶 4天阶',
+    quantity INT NOT NULL DEFAULT 1 COMMENT '堆叠数量',
+    effect_value BIGINT NOT NULL DEFAULT 0 COMMENT '效用数值（如丹药增加的灵力）',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_cultivator_item (cultivator_id, item_name)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT '储物袋表'

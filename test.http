@@ -1,0 +1,54 @@
+### 1. 拜入仙门（创建角色）
+POST http://localhost:8080/api/cultivators?daoName=逍遥子
+
+### 2. 查看角色面板
+GET http://localhost:8080/api/cultivators/1
+
+### 1. 测试全局异常拦截（用已存在的道号注册，观察是否返回 code: 400 的规范 JSON）
+POST http://localhost:8080/api/cultivators?daoName=清风道人
+
+### 2. 尝试直接突破筑基期（观察灵力/灵石不足的提示）
+POST http://localhost:8080/api/cultivators/1/breakthrough
+
+### 3. 打坐修炼（多点几次，直到灵力 >= 500 且灵石 >= 100）
+POST http://localhost:8080/api/cultivators/1/meditate
+
+### 4. 再次冲击筑基期！
+POST http://localhost:8080/api/cultivators/1/breakthrough
+
+### 5. 查看突破后的角色状态与 version 版本号变化
+GET http://localhost:8080/api/cultivators/1
+
+
+### 1. 放入两颗玄阶聚气丹（注意 POST 请求体前必须空一行）
+POST http://localhost:8080/api/cultivators/1/items
+Content-Type: application/json
+
+{
+  "itemName": "聚气丹",
+  "itemType": "DANYAO",
+  "quality": 2,
+  "quantity": 2,
+  "effectValue": 800
+}
+
+### 2. 再放入一柄地阶飞剑（测试不同类型与品阶）
+POST http://localhost:8080/api/cultivators/1/items
+Content-Type: application/json
+
+{
+  "itemName": "青锋剑",
+  "itemType": "FABAO",
+  "quality": 3,
+  "quantity": 1,
+  "effectValue": 0
+}
+
+### 3. 测试动态 SQL：只筛选品阶 >= 3 的宝物
+GET http://localhost:8080/api/cultivators/1/items?minQuality=3
+
+### 4. 测试一对多 resultMap：一次查询修士全属性 + 储物袋列表
+GET http://localhost:8080/api/cultivators/1/detail
+
+### 5. 测试跨表事务：吞服 1 号物品（聚气丹），观察丹药数量减 1 且修士灵力增加 800
+POST http://localhost:8080/api/cultivators/1/items/1/consume

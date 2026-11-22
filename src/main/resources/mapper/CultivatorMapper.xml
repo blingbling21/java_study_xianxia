@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.example.xianxia.mapper.CultivatorMapper">
+
+    <resultMap id="cultivatorResultMap" type="com.example.xianxia.entity.Cultivator">
+        <id column="id" property="id" />
+        <result column="dao_name" property="daoName" />
+        <result column="realm_level" property="realmLevel" />
+        <result column="realm_name" property="realmName" />
+        <result column="spiritual_power" property="spiritualPower" />
+        <result column="spirit_stones" property="spiritStones" />
+        <result column="version" property="version" />
+        <result column="created_at" property="createdAt" />
+        <result column="updated_at" property="updatedAt" />
+    </resultMap>
+    
+    <resultMap id="cultivatorDetailResultMap" type="com.example.xianxia.vo.CultivatorDetailVO">
+        <id column="id" property="id" />
+        <result column="dao_name" property="daoName" />
+        <result column="realm_level" property="realmLevel" />
+        <result column="realm_name" property="realmName" />
+        <result column="spiritual_power" property="spiritualPower" />
+        <result column="spirit_stones" property="spiritStones" />
+        <collection property="bagItems" ofType="com.example.xianxia.entity.StorageItem">
+            <id column="item_id" property="id" />
+            <result column="cultivator_id" property="cultivatorId" />
+            <result column="item_name" property="itemName" />
+            <result column="item_type" property="itemType" />
+            <result column="quality" property="quality" />
+            <result column="quantity" property="quantity" />
+            <result column="effect_value" property="effectValue" />
+        </collection>
+    </resultMap>
+
+    <insert id="insert" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO cultivator (dao_name, realm_level, realm_name, spiritual_power, spirit_stones)
+        VALUES (#{daoName}, #{realmLevel}, #{realmName}, #{spiritualPower}, #{spiritStones})
+    </insert>
+
+    <update id="addPassivePowerForAll">
+        UPDATE cultivator
+        SET spiritual_power = spiritual_power + realm_level * #{basePower}
+        WHERE id &gt; 0
+    </update>
+
+    <update id="updateWithVersion">
+        UPDATE cultivator
+        SET realm_level = #{realmLevel},
+            realm_name = #{realmName},
+            spiritual_power = #{spiritualPower},
+            spirit_stones = #{spiritStones},
+            version = version + 1
+        WHERE id = #{id} AND version = #{version}
+    </update>
+
+    <select id="selectById" resultMap="cultivatorResultMap">
+        SELECT * FROM cultivator WHERE id = #{id}
+    </select>
+
+    <select id="selectByDaoName" resultMap="cultivatorResultMap">
+        SELECT * FROM cultivator WHERE dao_name = #{daoName}
+    </select>
+
+    <select id="existsByBaoName" resultType="boolean">
+        SELECT EXISTS(SELECT 1 FROM cultivator WHERE dao_name = #{daoName})
+    </select>
+
+    <select id="selectDetailById" resultMap="cultivatorDetailResultMap">
+        SELECT c.id,
+               c.dao_name,
+               c.realm_level,
+               c.realm_name,
+               c.spiritual_power,
+               c.spirit_stones,
+               s.id AS item_id,
+               s.cultivator_id,
+               s.item_name,
+               s.item_type,
+               s.quality,
+               s.quantity,
+               s.effect_value
+        FROM cultivator c
+        LEFT JOIN storage_item s ON c.id = s.cultivator_id AND s.quantity > 0
+        WHERE c.id = #{id}
+        ORDER BY s.quality DESC, s.id ASC
+    </select>
+
+</mapper>
